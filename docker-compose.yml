@@ -1,0 +1,22 @@
+name: ipmi-kvm-browser
+
+services:
+  ipmi-kvm-browser:
+    image: solarkennedy/ipmi-kvm-docker
+    ports:
+      - "5901:5900"
+    environment:
+      RES: 1280x1024x24
+    volumes:
+      - ./via-vnc/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf:ro
+  ipmi-kvm-browser-via-x11:
+    image: solarkennedy/ipmi-kvm-docker
+    environment:
+      DISPLAY: ":0"
+      XAUTHORITY: "/.Xauthority"
+    volumes:
+      - ./via-x11/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf:ro
+      - ./via-x11/tmp/Xauthority:/.Xauthority
+      - ./via-x11/tmp/x11-socket:/tmp/.X11-unix/X0
+      - ./via-x11/config:/root/.config/chromium
+    entrypoint: /usr/bin/chromium-browser --no-sandbox --disable-sync
