@@ -23,7 +23,17 @@ cd "$MYDIR" || exit $?
 mkdir -p "$MYDIR/via-x11/tmp" || exit $?
 rm -f "$MYDIR/via-x11/tmp"/*
 
-mkdir -p "$MYDIR/via-x11/config" || exit $?
+# create config directory if it does not exist
+if [ ! -d "$MYDIR/via-x11/config" ]; then
+	if [ -e "$MYDIR/via-x11/config" ]; then
+		echo "FATAL: $MYDIR/via-x11/config exists but is not a directory." >&2
+		exit 1
+	fi
+	echo "Creating chromium config directory: $MYDIR/via-x11/config"
+	mkdir "$MYDIR/via-x11/config" || exit $?
+	# ensure the directory is writable by user owning the container
+	chmod g+srwx "$MYDIR/via-x11/config" || exit $?
+fi
 
 # check if X11 socket is available (should be available in most cases)
 if [ "$DISPLAY" != ":0" ]; then
