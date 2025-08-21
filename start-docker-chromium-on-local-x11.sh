@@ -31,7 +31,21 @@ if [ "$DISPLAY" != ":0" ]; then
 	exit 1
 fi
 
+# link X11 socket and copy Xauthority file to tmp directory to limit host X11 access
 ln -s /tmp/.X11-unix/X0 "$MYDIR/via-x11/tmp/x11-socket" || exit $?
+if [ -z "$XAUTHORITY" ]; then
+	# shellcheck disable=SC2066
+	for XAUTHORITY in "$HOME/.Xauthority" ; do
+		if [ -s "$XAUTHORITY" ]; then
+			break;
+		fi
+	done
+	if [ ! -s "$XAUTHORITY" ]; then
+		echo -e "Failed to find XAUTHORITY file.\nSet XAUTHORITY to the appropriate absolute file path and try again." >&2
+		exit 1
+	fi
+	echo "Found XAUTHORITY file: $XAUTHORITY"
+fi
 cp "$XAUTHORITY" "$MYDIR/via-x11/tmp/Xauthority" || exit $?
 
 # start the container
