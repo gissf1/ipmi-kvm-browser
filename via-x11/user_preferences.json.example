@@ -1,0 +1,8 @@
+{
+	"RestoreOnStartup": 1,
+	"SpellcheckEnabled": true,
+	"SpellcheckLanguage": ["en-US", "en"],
+	"TranslateEnabled": true,
+	"AutoFillEnabled": true,
+	"PasswordManagerEnabled": true
+}

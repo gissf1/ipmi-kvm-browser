@@ -21,4 +21,5 @@ services:
       - ./via-x11/config:/root/.config/chromium
       - ./via-x11/Downloads:/root/Downloads
       - ./via-x11/initial_preferences.json:/etc/chromium-browser/policies/recommended/initial_preferences:ro
+      - ./via-x11/user_preferences.json:/etc/chromium-browser/policies/recommended/user_preferences:ro
     entrypoint: /usr/bin/chromium-browser --no-sandbox --disable-sync
