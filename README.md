@@ -37,6 +37,11 @@ X11 mode passes the local X11 socket and .Xauthority authentication key into the
 
 While this mode restricts most direct file access to your host system, it exposes your host's X11 session to potential risks from older software. It offers lower resource utilization and better integration with the host desktop, but is only recommended for advanced users who understand and can mitigate the associated risks.
 
+This mode also supports some specialty features such as persistent Chromium configuration independent of container restart and a host-accessible Downloads folder.
+
+#### Configuration Management
+If the default configuration is not to your liking in X11 mode, there are a few options for adjustment. The easiest method is just to change the options within Chromium's settings page. In case the default security-minded settings are too strict for some use case or the UI does not allow a change, you can also edit the `via-x11/user_preferences.json` file to override the defaults without affecting files in version control. If this user_preferences method is desired, an example file is provided; simply rename it to activate.
+
 ## Usage
 To launch in VNC mode:
 ```bash
