@@ -1,0 +1,17 @@
+{
+	"BackgroundModeEnabled": false,
+	"DefaultBrowserSettingEnabled": false,
+	"HomepageIsNewTabPage": true,
+	"RestoreOnStartup": 0,
+	"SpellcheckEnabled": false,
+	"SpellCheckServiceEnabled": false,
+	"NetworkPredictionOptions": 2,
+	"SearchSuggestEnabled": false,
+	"DefaultSearchProviderEnabled": false,
+	"TranslateEnabled": false,
+	"AutoFillEnabled": false,
+	"PasswordManagerEnabled": false,
+	"MetricsReportingEnabled": false,
+	"SafeBrowsingEnabled": true,
+	"AlternateErrorPagesEnabled": false
+}

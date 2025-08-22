@@ -20,4 +20,5 @@ services:
       - ./via-x11/tmp/x11-socket:/tmp/.X11-unix/X0
       - ./via-x11/config:/root/.config/chromium
       - ./via-x11/Downloads:/root/Downloads
+      - ./via-x11/initial_preferences.json:/etc/chromium-browser/policies/recommended/initial_preferences:ro
     entrypoint: /usr/bin/chromium-browser --no-sandbox --disable-sync
