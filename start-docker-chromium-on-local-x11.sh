@@ -2,7 +2,7 @@
 # Start a Docker container running Chromium browser on local X11 server
 # The container:
 # - runs as current user
-# - uses private directory under via-x11/ for .config
+# - uses private directories under via-x11/ for .config and Downloads
 # - uses local X11 socket and Xauthority file for authentication
 
 if [ -z "$DISPLAY" ]; then
@@ -33,6 +33,18 @@ if [ ! -d "$MYDIR/via-x11/config" ]; then
 	mkdir "$MYDIR/via-x11/config" || exit $?
 	# ensure the directory is writable by user owning the container
 	chmod g+srwx "$MYDIR/via-x11/config" || exit $?
+fi
+
+# create Downloads directory if it does not exist
+if [ ! -d "$MYDIR/via-x11/Downloads" ]; then
+	if [ -e "$MYDIR/via-x11/Downloads" ]; then
+		echo "FATAL: $MYDIR/via-x11/Downloads exists but is not a directory." >&2
+		exit 1
+	fi
+	echo "Creating chromium Downloads directory: $MYDIR/via-x11/Downloads"
+	mkdir "$MYDIR/via-x11/Downloads" || exit $?
+	# ensure the directory is writable by user owning the container
+	chmod g+srwx "$MYDIR/via-x11/Downloads" || exit $?
 fi
 
 # check if X11 socket is available (should be available in most cases)
