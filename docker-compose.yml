@@ -1,16 +1,32 @@
 name: ipmi-kvm-browser
 
 services:
+  # Common base image with shared dependencies
+  ipmi-kvm-base:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM solarkennedy/ipmi-kvm-docker
+        RUN apt-get update && \
+            apt-get install -y python3-tk && \
+            rm -rf /var/lib/apt/lists/*
+    image: ipmi-kvm-base:latest
+  # VNC/noVNC based browser
   ipmi-kvm-browser:
-    image: solarkennedy/ipmi-kvm-docker
+    depends_on:
+      - ipmi-kvm-base
+    image: ipmi-kvm-base:latest
     ports:
       - "5901:5900"
     environment:
       RES: 1280x1024x24
     volumes:
       - ./via-vnc/supervisord.conf:/etc/supervisor/conf.d/supervisord.conf:ro
+  # X11 based browser
   ipmi-kvm-browser-via-x11:
-    image: solarkennedy/ipmi-kvm-docker
+    depends_on:
+      - ipmi-kvm-base
+    image: ipmi-kvm-base:latest
     environment:
       DISPLAY: ":0"
       XAUTHORITY: "/.Xauthority"
@@ -22,4 +38,5 @@ services:
       - ./via-x11/Downloads:/root/Downloads
       - ./via-x11/initial_preferences.json:/etc/chromium-browser/policies/recommended/initial_preferences:ro
       - ./via-x11/user_preferences.json:/etc/chromium-browser/policies/recommended/user_preferences:ro
-    entrypoint: /usr/bin/chromium-browser --no-sandbox --disable-sync
+      - ./app-selector.py:/root/app-selector.py:ro
+    entrypoint: /root/app-selector.py
