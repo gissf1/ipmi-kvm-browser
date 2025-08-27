@@ -71,7 +71,7 @@ fi
 cp "$XAUTHORITY" "$MYDIR/via-x11/tmp/Xauthority" || exit $?
 
 # start the container
-docker compose up ipmi-kvm-browser-via-x11 || exit $?
+docker compose up ipmi-kvm-browser-via-x11 --remove-orphans || exit $?
 
 # clean up tmp directory
 rm -f "$MYDIR/via-x11/tmp"/*
