@@ -62,12 +62,59 @@ def check_x11_environment():
 	if not os.access(x11_socket, os.W_OK):
 		raise EnvironmentError("FATAL: X11 socket is not writable: {}".format(x11_socket))
 
+def show_error_message(message):
+	# Store status label widget
+	status_label_info = status_label.pack_info()
+	status_label.pack_forget()
+
+	# Create and show error message
+	error_text = tk.Text(root, height=4, width=50)
+	error_text.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+	error_text.insert('1.0', message)
+	error_text.config(state=tk.DISABLED)
+
+	def restore_status():
+		# Remove error display
+		for widget in root.winfo_children():
+			if isinstance(widget, (tk.Text, tk.Button)) and widget.cget('text') == "OK":
+				widget.destroy()
+		# Restore status label
+		status_label.pack(**status_label_info)
+
+	# Add OK button to dismiss
+	ok_button = tk.Button(root, text="OK", command=restore_status)
+	ok_button.pack(pady=10)
+
+def update_status(text, is_bold=False, is_blue=False):
+	"""Update status label with consistent styling"""
+	status_label.config(
+		text=text,
+		font=('TkDefaultFont', 12, 'bold' if is_bold else ''),
+		fg='blue' if is_blue else 'black'
+	)
+	root.update()
+	root.update_idletasks()
+	root.geometry('')  # Reset to natural size
+	root.update()
+
 def launch_app(command):
 	print("Launching app: {}".format(command))
 	try:
 		# Split the command into a list for Popen
 		if isinstance(command, str):
 			command = command.split()
+
+		# Hide app buttons but preserve quit button
+		for widget in root.winfo_children():
+			if isinstance(widget, tk.Button) and widget.cget('text') != "Exit (Q or Esc)":
+				widget.pack_forget()
+
+		# Update status message with app name
+		update_status("Launching {}...\n".format(command[0]), is_blue=True)
+
+		# Force window to resize to fit remaining content
+		root.update_idletasks()
+		root.geometry('')  # Reset to natural size
 
 		# Launch the application
 		process = subprocess.Popen(command)
@@ -77,7 +124,11 @@ def launch_app(command):
 			# Process terminated immediately
 			error_msg = "Application failed to start (exit code: {})".format(process.returncode)
 			print(error_msg)
+			show_error_message(error_msg)
 			return
+
+		# App started successfully - update UI
+		update_status("Started PID {}:\n{}".format(process.pid, ' '.join(command)), is_blue=True)
 
 		# Set up handler for child process termination
 		def handle_sigchld(signum, frame):
@@ -88,12 +139,24 @@ def launch_app(command):
 				sys.exit(exitcode)
 
 		signal.signal(signal.SIGCHLD, handle_sigchld)
+
+	except (OSError, subprocess.SubprocessError) as e:
+		error_msg = "Failed to launch {}: {}".format(command[0], str(e))
+		print(error_msg)
+		show_error_message(error_msg)
 	except Exception as e:
 		error_msg = "Unexpected error at {}: {}".format(
 			sys._getframe().f_code.co_name,
 			str(e)
 		)
 		print(error_msg)
+		show_error_message(error_msg)
+	finally:
+		# On any error path, restore the app buttons
+		if any(isinstance(w, tk.Text) for w in root.winfo_children()):
+			for widget in root.winfo_children():
+				if isinstance(widget, tk.Button) and widget.cget('text') != "Exit (Q or Esc)":
+					widget.pack(fill=tk.X, padx=10, pady=2)
 
 def check_binary_exists(binary_name):
 	"""Check if a binary exists in the system PATH"""
@@ -209,9 +272,26 @@ def get_current_monitor_geometry():
 	return (0, 0, screen_width, screen_height)
 
 def create_ui():
-	global root
+	global root, status_label
 	root = tk.Tk()
 	root.title("Application Launcher")
+
+	def update_wraplength(event=None):
+		# Get actual padding from widget's pack info
+		info = status_label.pack_info()
+		padding_x = info.get('padx', 0)
+		# Handle both tuple and integer padding
+		if isinstance(padding_x, tuple):
+			total_padding = padding_x[0] + padding_x[1]
+		else:
+			total_padding = 2 * padding_x
+
+		width = root.winfo_width() - total_padding
+		if width > 0:  # Avoid negative values during initialization
+			status_label.config(wraplength=width)
+
+	# Configure root to handle resize
+	root.bind('<Configure>', update_wraplength)
 
 	apps = [
 		("Chromium",   "chromium-browser", "--no-sandbox --disable-sync"),
@@ -220,6 +300,13 @@ def create_ui():
 		("XTerm",      "xterm", None),
 		("UXTerm",     "uxterm", None),
 	]
+
+	# Create persistent status label at top
+	status_label = tk.Label(root
+		,text="Application to launch?"
+		,font=('TkDefaultFont', 12)
+	)
+	status_label.pack(pady=(20,10), padx=20, fill=tk.X)
 
 	last_index = 0
 	for i, (name, command, args) in enumerate(apps):
