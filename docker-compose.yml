@@ -8,7 +8,7 @@ services:
       dockerfile_inline: |
         FROM solarkennedy/ipmi-kvm-docker
         RUN apt-get update && \
-            apt-get install -y python3-tk lxterminal && \
+            apt-get install -y python3-tk lxterminal firefox && \
             rm -rf /var/lib/apt/lists/*
     image: ipmi-kvm-base:latest
   # VNC/noVNC based browser
